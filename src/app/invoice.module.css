@@ -1,0 +1,114 @@
+.invoiceContainer {
+  background-color: white;
+  padding: 90px;
+  max-width: 970px;
+  margin: 0 auto;
+  border: 1px solid #ccc;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.invoiceHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.companyDetails {
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.companyLogo img {
+  width: 150px;
+}
+
+.invoiceDetails {
+  text-align: right;
+  margin-top: 20px;
+}
+
+.invoiceDetails h1 {
+  font-size: 24px;
+  margin: 0;
+}
+
+.invoiceInfo {
+  font-size: 14px;
+}
+
+.clientDetails {
+  margin-top: 30px;
+}
+
+.currencySelection {
+  margin: 20px 0;
+}
+
+.invoiceTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.invoiceTable th,
+.invoiceTable td {
+  padding: 10px;
+  border: 1px solid #ccc;
+  text-align: left;
+}
+
+.invoiceTotal {
+  text-align: right;
+  margin-top: 20px;
+  font-size: 18px;
+}
+
+/* Link to add a new row */
+.addRow {
+  margin-top: 22px;
+  font-size: 30px;
+  position: relative;
+}
+
+.addRow a {
+  color: blue;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* Summary table styling */
+.summaryTable {
+  width: 100%;
+  margin-top: 20px;
+  border-collapse: collapse;
+}
+
+.summaryTable td {
+  padding: 10px;
+  border: 1px solid #ccc;
+  text-align: right;
+  font-size: 14px;
+}
+
+.summaryTable tr td:first-child {
+  text-align: left;
+}
+
+.listingButton {
+  position: absolute;
+  right: -3px;
+  top: -39px;
+}
+
+.listingButtonControl {
+  position: absolute;
+  right: 434px;
+  top: -44px;
+}
+.balanceRow {
+  background-color: #f0f0f0;
+}
+
+/* strong {
+    font-weight: bold;
+} */

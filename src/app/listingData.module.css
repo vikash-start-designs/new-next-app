@@ -1,0 +1,133 @@
+/* listing.module.css */
+
+/* Container class */
+.tableContainer {
+  width: 100%;
+  overflow-x: auto;
+  margin: 20px 0;
+}
+
+/* Table class */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0;
+  font-size: 16px;
+  text-align: left;
+}
+
+/* Header row class */
+.tableHeadRow {
+  background-color: #0075A2;
+  color: white;
+}
+
+/* Header and body cell classes */
+.tableCell, .tableHeader {
+  padding: 12px 15px;
+  border: 1px solid #ddd;
+}
+
+.tableHeader {
+  background-color: #0075A2;
+  color: white;
+}
+
+/* Row striping for the body */
+.tableRow:nth-child(even) {
+  background-color: #f3f3f3;
+}
+
+/* Hover effect for rows */
+.tableRow:hover {
+  background-color: #f1f1f1;
+}
+
+/* Bold class for emphasized text */
+.bold {
+  font-weight: bold;
+  color: #0075A2;
+}
+
+/* Responsive styles for mobile screens */
+@media screen and (max-width: 768px) {
+  .table, .tableHead, .tableBody, .tableRow, .tableCell, .tableHeader {
+    display: block;
+  }
+
+  .tableHeadRow {
+    position: absolute;
+    top: -9999px;
+    left: -9999px;
+  }
+
+  .tableRow {
+    margin-bottom: 20px;
+  }
+
+  .tableCell {
+    position: relative;
+    padding-left: 50%;
+    text-align: right;
+  }
+
+  .tableCell:before {
+    position: absolute;
+    left: 6px;
+    width: 45%;
+    padding-right: 10px;
+    white-space: nowrap;
+    font-weight: bold;
+    text-align: left;
+  }
+
+  /* Column-specific content for responsive */
+  .tableCell:nth-of-type(1):before { content: "Account"; }
+  .tableCell:nth-of-type(2):before { content: "Qty"; }
+  .tableCell:nth-of-type(3):before { content: "Item"; }
+  .tableCell:nth-of-type(4):before { content: "Item Price"; }
+  .tableCell:nth-of-type(5):before { content: "Paid"; }
+  .tableCell:nth-of-type(6):before { content: "Balance"; }
+  .tableCell:nth-of-type(7):before { content: "Date"; }
+  .tableCell:nth-of-type(8):before { content: "Time"; }
+}
+/* Styling for the button */
+
+.invoiceButton {
+  background-color: #0075A2; /* Blue background */
+  color: white; /* White text */
+  padding: 10px 20px; /* Padding for button size */
+  border: none; /* Remove default borders */
+  border-radius: 5px; /* Rounded corners */
+  font-size: 16px; /* Font size */
+  cursor: pointer; /* Pointer cursor on hover */
+  transition: background-color 0.3s ease; /* Smooth background transition */
+  margin: 10px;
+}
+
+.newinvoiceButton {
+  background-color: #136204eb; /* Blue background */
+  color: white; /* White text */
+  padding: 10px 20px; /* Padding for button size */
+  border: none; /* Remove default borders */
+  border-radius: 5px; /* Rounded corners */
+  font-size: 16px; /* Font size */
+  cursor: pointer; /* Pointer cursor on hover */
+  transition: background-color 0.3s ease; /* Smooth background transition */
+}
+
+.invoiceButton:hover {
+  background-color: #005f82; /* Darker blue on hover */
+}
+
+.invoiceButton:active {
+  background-color: #004763; /* Even darker blue when pressed */
+  transform: scale(0.98); /* Slight button shrink when clicked */
+}
+
+/* Responsive: Full width button on small screens */
+@media screen and (max-width: 768px) {
+  .invoiceButton {
+    width: 100%;
+  }
+}
