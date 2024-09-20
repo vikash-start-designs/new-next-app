@@ -19,7 +19,12 @@ export const POST = async (req) => {
       to: payload.to,
       invoice : payload.invoice,
       rows: rows,
-      total: payload.total,
+      subtotal: payload.subtotal,
+      taxAmount : payload.taxAmount.toFixed(2),
+      advanceDeposite: payload.deposite,
+      taxParcentage : payload.taxPercentage,
+      dueBalance: payload.dueBalance.toFixed(2),
+      total: payload.total.toFixed(),
     });
     console.log("newInvoice", newInvoice);
 

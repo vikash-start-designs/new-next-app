@@ -44,7 +44,12 @@ export const PUT = async (req, value) => {
       to: rows.to,
       invoice: rows.invoice,
       rows: rows,
-      total: rows.total,
+      subtotal: invoiceData.subtotal,
+      taxAmount : invoiceData.taxAmount.toFixed(2),
+      advanceDeposite: invoiceData.deposite,
+      taxParcentage: invoiceData.taxPercentage,
+      dueBalance: invoiceData.dueBalance.toFixed(2),
+      total: invoiceData.totalPrice,
     };
     console.log("newInvoice", payload);
 
@@ -66,3 +71,26 @@ export const PUT = async (req, value) => {
     });
   }
 };
+
+export const DELETE = async (req, value)=>{
+  try {
+    connection();
+    const invId = value.params.invoiceId;
+    
+    console.log("invId-->>>", invId);
+    let deletedInvoice = await Invoice.findByIdAndDelete({_id: invId});
+    console.log("deletedInvoice", deletedInvoice);
+
+    return NextResponse.json({
+      result: deletedInvoice,
+      status: true,
+    });
+
+  } catch (error) {
+    return NextResponse.json({
+      status: false,
+      message: "Internal Server Error",
+      Error: error.message,
+    });
+  }
+}

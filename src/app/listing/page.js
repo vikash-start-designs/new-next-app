@@ -1,4 +1,5 @@
 "use client";
+import { BsArchiveFill } from "react-icons/bs";
 import { useEffect, useState } from "react";
 import styles from "../listingData.module.css";
 import { useRouter } from "next/navigation";
@@ -35,6 +36,8 @@ const Listing = () => {
     }
   }, [invoice]);
 
+
+
   return (
     <div className={styles.tableContainer}>
       <table className={styles.table}>
@@ -60,6 +63,7 @@ const Listing = () => {
                 >
                   Show
                 </button>
+                <a><BsArchiveFill onClick={()=>{router.push(`../delete/${inv._id}`)}}/></a>
               </tr>
             ))
           ) : (

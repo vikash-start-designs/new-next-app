@@ -16,8 +16,30 @@ const EditInvoie = (props) => {
 
   const [to, setTo] = useState("");
   const [invoice, setInvoice] = useState("");
-  const [total, setTotal] = useState(null);
+  // const [total, setTotal] = useState(null);
   const [rows, setRows] = useState([]);
+  const [tax, setTax] = useState(0)
+  const [taxAmount, setTaxAmount] = useState(0);
+  const [subtotal, setSubtotal] = useState(0)
+  const [dueBalance, setDueBalance] = useState(0);
+  const [totalPrice, setTotalPrice] = useState(0);
+  const [deposit, setDeposite] = useState(0);
+  const [taxPercentage, setTaxPercentage] = useState(0);
+
+  const calculateTotalPrice = (updatedRows, taxRate = taxPercentage, deposite = deposit) => {
+
+    let newSubtotal = updatedRows.reduce((sum, row) => sum + row.price, 0);
+    setSubtotal(newSubtotal);
+
+    let newTaxAmount = (taxRate / 100) * newSubtotal;
+    setTaxAmount(newTaxAmount);
+
+    let newTotal = newSubtotal + newTaxAmount;
+    setTotalPrice(newTotal);
+
+    let newDueBalance = newTotal - deposite;
+    setDueBalance(newDueBalance);
+  };
 
   useEffect(() => {
     const editInvoice = async () => {
@@ -33,8 +55,13 @@ const EditInvoie = (props) => {
         console.log("result2--->", result);
         setTo(result.to);
         setInvoice(result.invoice);
-        setTotal(result.total);
+        setTotalPrice(result.total);
         setRows(result.rows);
+        setSubtotal(result.subtotal);
+        setTaxAmount(result.taxAmount); 
+        setDueBalance(result.dueBalance);
+        setDeposite(result.advanceDeposite);
+        setTaxPercentage(result.taxParcentage);
       }
     };
     editInvoice();
@@ -61,7 +88,7 @@ const EditInvoie = (props) => {
 
     // Calculate the new price
     const updatedPrice = updatedUnitCost * updatedQuantity;
-    setTotal(total + updatedPrice);
+    setTotalPrice(totalPrice + updatedPrice);
     updatedRows[index] = {
       ...updatedRows[index],
       [name]: value,
@@ -69,19 +96,40 @@ const EditInvoie = (props) => {
     };
 
     setRows(updatedRows);
+    calculateTotalPrice(updatedRows);
   };
-
+  const handleTaxAndDepositChange = (event) => {
+    const { name, value } = event.target;
+    if (name === "tax") {
+      const taxValue = parseFloat(value) || 0;
+      setTaxPercentage(taxValue);
+      calculateTotalPrice(rows, taxValue);
+    } else if (name === "deposite") {
+      const depositValue = parseFloat(value) || 0;
+      setDeposite(depositValue);
+      calculateTotalPrice(rows, taxPercentage, depositValue);
+    }
+  };
   const handleUpdateInvoice = async () => {
     try {
       let data = await fetch(
         `http://localhost:3000/api/save-invoice/${editID}`,
         {
           method: "PUT",
-          body: JSON.stringify({ to: to, invoice, rows, total }),
+          body: JSON.stringify({ to: to, 
+            invoice, 
+            rows,
+            totalPrice, 
+            subtotal: subtotal,
+            taxAmount: taxAmount,
+            deposite : deposit,
+            taxPercentage: taxPercentage, 
+            dueBalance: dueBalance }),
         }
       );
 
       data = await data.json();
+      console.log("data--->", data)
       if (data.status) {
         alert("Invoice Updated Successfully");
         router.push('../../listing')
@@ -128,7 +176,7 @@ const EditInvoie = (props) => {
             </p>
             <p>
               <strong>Amount Due:</strong>
-              {`₹${total}`}
+              {`₹${totalPrice}`}
             </p>
           </div>
         </section>
@@ -218,30 +266,54 @@ const EditInvoie = (props) => {
             <tbody>
               <tr>
                 <td>Subtotal</td>
-                <td>{`₹${total}`}</td>
+                <td>{`$${subtotal}`}</td>
               </tr>
               <tr>
-                <td>Tax(%) Included</td>
-                <td>₹0.00</td>
+                <td>Tax (%)</td>
+                <td>
+                  <input
+                    type="number"
+                    name="tax"
+                    placeholder="Enter Tax"
+                    onChange={handleTaxAndDepositChange}
+                    value={taxPercentage}
+                  />
+                </td>
+              </tr>
+              <tr>
+                <td>Tax Amount</td>
+                <td>{`$${taxAmount.toFixed(2)}`}</td>
+              </tr>
+              <tr>
+                <td>Enter Deposited</td>
+                <td>
+                  <input
+                    type="number"
+                    name="deposite"
+                    placeholder="Enter Advance Deposited"
+                    onChange={handleTaxAndDepositChange}
+                    value={deposit}
+                  />
+                </td>
               </tr>
               <tr>
                 <td>
                   <strong>Total</strong>
                 </td>
                 <td>
-                  <strong>{`₹${total}`}</strong>
+                  <strong>{`$${totalPrice}`}</strong>
                 </td>
               </tr>
               <tr>
                 <td>Amount Paid</td>
-                <td>₹0.00</td>
+                <td>{`$${deposit}`}</td>
               </tr>
               <tr className={styles.balanceRow}>
                 <td>
                   <strong>Balance Due</strong>
                 </td>
                 <td>
-                  <strong>{`₹${total}`}</strong>
+                  <strong>{`$${dueBalance.toFixed(2)}`}</strong>
                 </td>
               </tr>
             </tbody>

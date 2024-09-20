@@ -5,15 +5,22 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 First, run the development server:
 
 ```bash
+# To create developnment build
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
 
+# To create Production build
+npm run build
+
+# To start the Server
+npm start
+
+# Database
+mongoDB Database
+
+# mongodo ORM
+mongoose
+
+```
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
 You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.

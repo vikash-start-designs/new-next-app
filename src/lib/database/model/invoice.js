@@ -1,3 +1,5 @@
+import { type } from "os";
+
 const mongoose = require("mongoose");
 
 const invoiceSchema = new mongoose.Schema(
@@ -13,7 +15,12 @@ const invoiceSchema = new mongoose.Schema(
         price: { type: Number, required: true },
       },
     ],
+    subtotal : {type: Number},
+    taxAmount : {type: Number},
+    advanceDeposite: {type: Number},
+    taxParcentage : {type: Number},
     total: { type: Number },
+    dueBalance : {type: Number}
   },
   { timestamps: true }
 );

@@ -1,60 +1,63 @@
+
 "use client";
+import { MdAddCircleOutline } from "react-icons/md";
 import Image from "next/image";
 import { useState } from "react";
 import styles from "./invoice.module.css";
 import { useRouter } from "next/navigation";
+
 export default function Home() {
-  const router = useRouter()
+  const router = useRouter();
   const [rows, setRows] = useState([
     {
       item: "Web Updates",
       description: "Monthly web updates for http://widgetcorp.com",
-      unitCost: 650.5,
+      unitCost: 10,
       quantity: 1,
-      price: 650.0,
+      price: 10,
     },
   ]);
-  //Date
+
+  // Date
   const currentDate = new Date();
   const day = currentDate.getDate();
-  const month = currentDate.getMonth() + 1; // Add 1 as months are zero-based
+  const month = currentDate.getMonth() + 1;
   const year = currentDate.getFullYear();
 
-  const [totalPrice, setTotalPrice] = useState(650.0);
+  // States
   const [to, setTo] = useState("");
   const [invoice, setInvoice] = useState("SD/19-20/09-S001");
-  const [tax, setTax] = useState("")
-  const [subtotal, setSubtotal] = useState("")
+  const [subtotal, setSubtotal] = useState(10.0);
+  const [taxPercentage, setTaxPercentage] = useState(0); // Percentage
+  const [taxAmount, setTaxAmount] = useState(0); // Calculated tax amount
+  const [deposite, setDeposite] = useState(0);
+  const [dueBalance, setDueBalance] = useState(10.0);
+  const [totalPrice, setTotalPrice] = useState(10.0);
 
-
-const calculateTotalPrice = (updatedRows) => {
-  let newTotal = updatedRows.reduce((sum, row) => sum + row.price, 0);
-  setSubtotal(newTotal);
-  let taxValue = newTotal*10/100;
-  newTotal = newTotal + taxValue;
- 
-  setTotalPrice(newTotal);
-  setTax(taxValue);
-};
+  ;
   const handleTO = (toValue) => {
-    console.log("tovalue", toValue);
     setTo(toValue);
   };
 
   const handleInvoice = (invoiceValue) => {
-    console.log("invoiceValue", invoiceValue);
     setInvoice(invoiceValue);
   };
-  const handleAddNewRow = () => {
-    setRows([
-      ...rows,
-      { item: "", description: "", unitCost: "", quantity: "", price: 0 },
-    ]);
+
+  const calculateTotals = (updatedRows, taxRate = taxPercentage, deposit = deposite) => {
+    let newSubtotal = updatedRows.reduce((sum, row) => sum + row.price, 0);
+    setSubtotal(newSubtotal);
+
+    let newTaxAmount = (taxRate / 100) * newSubtotal;
+    setTaxAmount(newTaxAmount);
+
+    let newTotal = newSubtotal + newTaxAmount;
+    setTotalPrice(newTotal);
+
+    let newDueBalance = newTotal - deposit;
+    setDueBalance(newDueBalance);
   };
 
-
-  
-  const handleCostAndQua = (index, event) => {
+  const handleCostAndQuantityChange = (index, event) => {
     const { name, value } = event.target;
     const updatedRows = [...rows];
 
@@ -67,9 +70,7 @@ const calculateTotalPrice = (updatedRows) => {
         ? parseFloat(value) || 0
         : parseFloat(updatedRows[index].quantity) || 0;
 
-    // Calculate the new price
     const updatedPrice = updatedUnitCost * updatedQuantity;
-    setTotalPrice(totalPrice + updatedPrice);
     updatedRows[index] = {
       ...updatedRows[index],
       [name]: value,
@@ -77,18 +78,46 @@ const calculateTotalPrice = (updatedRows) => {
     };
 
     setRows(updatedRows);
-    calculateTotalPrice(updatedRows);
+    calculateTotals(updatedRows);
+  };
+
+  const handleTaxAndDepositChange = (event) => {
+    const { name, value } = event.target;
+    if (name === "tax") {
+      const taxValue = parseFloat(value) || "";
+      setTaxPercentage(taxValue);
+      calculateTotals(rows, taxValue);
+    } else if (name === "deposite") {
+      const depositValue = parseFloat(value) || "";
+      setDeposite(depositValue);
+      calculateTotals(rows, taxPercentage, depositValue);
+    }
+  };
+
+  const handleAddNewRow = () => {
+    setRows([
+      ...rows,
+      { item: "", description: "", unitCost: "", quantity: "", price: 0 },
+    ]);
   };
 
   const saveInvoice = async () => {
+    
     try {
+      console.log("deposite--->", deposite);
+      console.log("taxxxxx--->", taxPercentage)
       let data = await fetch("http://localhost:3000/api/save-invoice", {
         method: "POST",
         body: JSON.stringify({
           to: to,
           invoice,
           rows,
+          subtotal: subtotal,
+          taxAmount: taxAmount,
+          deposite : deposite,
+          taxPercentage: taxPercentage, 
           total: totalPrice,
+          dueBalance: dueBalance
         }),
       });
 
@@ -105,9 +134,11 @@ const calculateTotalPrice = (updatedRows) => {
       alert("An error occurred. Please try again.");
     }
   };
+
   return (
     <>
       <div className={styles.invoiceContainer}>
+        {/* Header Section */}
         <header className={styles.invoiceHeader}>
           <div className={styles.companyDetails}>
             <h2>START DESIGNS</h2>
@@ -127,6 +158,7 @@ const calculateTotalPrice = (updatedRows) => {
           </div>
         </header>
 
+        {/* Invoice Details */}
         <section className={styles.invoiceDetails}>
           <h1>INVOICE</h1>
           <div className={styles.invoiceInfo}>
@@ -144,32 +176,24 @@ const calculateTotalPrice = (updatedRows) => {
             </p>
             <p>
               <strong>Amount Due:</strong>
-              {`₹${totalPrice}`}
+              {`$${dueBalance.toFixed(2)}`}
             </p>
           </div>
         </section>
 
+        {/* Client Details */}
         <section className={styles.clientDetails}>
           <p>
             <strong>To:</strong>
           </p>
           <textarea
             name="to"
-            style={{ height: "100px", overflow: "hidden"}}
-            type=" text"
+            style={{ height: "100px", overflow: "hidden" }}
             onChange={(event) => handleTO(event.target.value)}
-          >
-            {" "}
-          </textarea>
+          />
         </section>
 
-        <section className={styles.currencySelection}>
-          <label htmlFor="currency">Rupees(₹):</label>
-          <select id="currency" name="currency">
-            <option value="INR">Rupees (₹)</option>
-          </select>
-        </section>
-
+        {/* Table */}
         <table className={styles.invoiceTable}>
           <thead>
             <tr>
@@ -188,9 +212,8 @@ const calculateTotalPrice = (updatedRows) => {
                     type="text"
                     placeholder="Enter item"
                     value={row.item}
-                    onChange={(e) => handleCostAndQua(index, e)}
+                    onChange={(e) => handleCostAndQuantityChange(index, e)}
                     name="item"
-                     
                   />
                 </td>
                 <td>
@@ -198,9 +221,9 @@ const calculateTotalPrice = (updatedRows) => {
                     type="text"
                     placeholder="Enter Description"
                     value={row.description}
-                    onChange={(e) => handleCostAndQua(index, e)}
+                    onChange={(e) => handleCostAndQuantityChange(index, e)}
                     name="description"
-                  />{" "}
+                  />
                 </td>
                 <td>
                   <input
@@ -208,72 +231,89 @@ const calculateTotalPrice = (updatedRows) => {
                     name="unitCost"
                     placeholder="Enter Unit Cost"
                     value={row.unitCost}
-                    onChange={(e) => handleCostAndQua(index, e)}
+                    onChange={(e) => handleCostAndQuantityChange(index, e)}
                   />
                 </td>
                 <td>
-                  {" "}
                   <input
-                    input type="text" inputmode="numeric"
+                    type="number"
                     name="quantity"
                     placeholder="Quantity"
                     value={row.quantity}
-                    onChange={(e) => handleCostAndQua(index, e)}
+                    onChange={(e) => handleCostAndQuantityChange(index, e)}
                   />
                 </td>
-                <td>₹{row.price ? row.price.toFixed(2) : "0.00"}</td>
+                <td>${row.price.toFixed(2)}</td>
               </tr>
             ))}
           </tbody>
         </table>
 
+        {/* Total Calculation */}
         <div className={styles.invoiceTotal}>
           <div className={styles.addRow}>
-            <button onClick={handleAddNewRow}>Add New Row</button>
+            <a><MdAddCircleOutline onClick={handleAddNewRow} /></a>
           </div>
           <table className={styles.summaryTable}>
             <tbody>
               <tr>
                 <td>Subtotal</td>
-                <td>{`₹${subtotal}`}</td>
+                <td>{`$${subtotal.toFixed(2)}`}</td>
               </tr>
               <tr>
-                <td>Tax(10%) Included</td>
-                <td>{`+ ₹${tax}`}</td>
+                <td>Tax (%)</td>
+                <td>
+                  <input
+                    type="number"
+                    name="tax"
+                    placeholder="Enter Tax"
+                    onChange={handleTaxAndDepositChange}
+                    value={taxPercentage === "" ? "" : taxPercentage}
+                  />
+                </td>
               </tr>
               <tr>
+                <td>Tax Amount</td>
+                <td>{`$${taxAmount.toFixed(2)}`}</td>
+              </tr>
+              <tr>
+                <td>Enter Deposited</td>
                 <td>
-                  <strong>Total</strong>
+                  <input
+                    type="number"
+                    name="deposite"
+                    placeholder="Enter Advance Deposited"
+                    onChange={handleTaxAndDepositChange}
+                    value={deposite === "" ? "" : deposite}
+                  />
                 </td>
-                <td>
-                  <strong>{`₹${totalPrice}`}</strong>
-                </td>
+              </tr>
+              <tr>
+                <td>Total</td>
+                <td>{`$${totalPrice.toFixed(2)}`}</td>
               </tr>
               <tr>
                 <td>Amount Paid</td>
-                <td>₹0.00</td>
+                <td>{`$${deposite}`}</td>
               </tr>
               <tr className={styles.balanceRow}>
-                <td>
-                  <strong>Balance Due</strong>
-                </td>
-                <td>
-                  <strong>{`₹${totalPrice}`}</strong>
-                </td>
+                <td><strong>Balance Due</strong></td>
+                <td><strong>{`$${dueBalance.toFixed(2)}`}</strong></td>
               </tr>
             </tbody>
           </table>
         </div>
+
+        {/* Save Button */}
         <div className={styles.addRow}>
           <button onClick={saveInvoice}> Save Invoice</button>
         </div>
+
+        {/* Listing Button */}
         <div className={styles.addRow}>
-        <button className={styles.listingButton} onClick={()=>router.push('/listing')}> Listing </button>
+          <button className={styles.listingButton} onClick={() => router.push('/listing')}> Listing </button>
         </div>
-      
       </div>
     </>
   );
 }
-
-
