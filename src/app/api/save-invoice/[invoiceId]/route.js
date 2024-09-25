@@ -41,6 +41,7 @@ export const PUT = async (req, value) => {
 
     console.log("rows--->", rows);
     const payload = {
+      from : invoiceData.from,
       to: rows.to,
       invoice: rows.invoice,
       rows: rows,
@@ -50,6 +51,7 @@ export const PUT = async (req, value) => {
       taxParcentage: invoiceData.taxPercentage,
       dueBalance: invoiceData.dueBalance.toFixed(2),
       total: invoiceData.totalPrice,
+      notes: invoiceData.notes
     };
     console.log("newInvoice", payload);
 

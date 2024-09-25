@@ -17,7 +17,7 @@ npm start
 # Database
 mongoDB Database
 
-# mongodo ORM
+# mongodb ORM
 mongoose
 
 ```

@@ -16,8 +16,10 @@ export const POST = async (req) => {
     }));
     console.log("rows--->", rows);
     const newInvoice = new Invoice({
+      from : payload.from,
       to: payload.to,
       invoice : payload.invoice,
+      logoImage :payload.logo,
       rows: rows,
       subtotal: payload.subtotal,
       taxAmount : payload.taxAmount.toFixed(2),
@@ -25,6 +27,7 @@ export const POST = async (req) => {
       taxParcentage : payload.taxPercentage,
       dueBalance: payload.dueBalance.toFixed(2),
       total: payload.total.toFixed(),
+      notes : payload.notes
     });
     console.log("newInvoice", newInvoice);
 

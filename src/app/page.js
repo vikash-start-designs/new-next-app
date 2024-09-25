@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useState } from "react";
 import styles from "./invoice.module.css";
 import { useRouter } from "next/navigation";
+import html2pdf from "html2pdf.js";
 
 export default function Home() {
   const router = useRouter();
@@ -25,6 +26,20 @@ export default function Home() {
   const year = currentDate.getFullYear();
 
   // States
+  const initialValue = `START DESIGNS 
+  House No. 677, 3rd floor Office No. 308 to 311,
+  Chandalal Kalyanmal Complex,
+  Kishanpol Bazar, Jaipur - 302002
+  startdeesigns@gmail.com
+  
+  GSTIN: 08ACUFS9062L1Z3`;
+
+  const [isFocused, setIsFocused] = useState(false);
+  const [inputValue, setInputValue] = useState(initialValue);
+
+  const [imageSrc, setImageSrc] = useState(null);
+  const [base64Image, setBase64Image] = useState(null);
+
   const [to, setTo] = useState("");
   const [invoice, setInvoice] = useState("SD/19-20/09-S001");
   const [subtotal, setSubtotal] = useState(10.0);
@@ -33,8 +48,12 @@ export default function Home() {
   const [deposite, setDeposite] = useState(0);
   const [dueBalance, setDueBalance] = useState(10.0);
   const [totalPrice, setTotalPrice] = useState(10.0);
+  const [notes, setNotes] = useState("");
+  
+  const handleInputChange = (e) => {
+    setInputValue(e.target.value);
+  };
 
-  ;
   const handleTO = (toValue) => {
     setTo(toValue);
   };
@@ -101,15 +120,20 @@ export default function Home() {
     ]);
   };
 
+  const handleNotes = (e)=>{
+    setNotes(event.target.value)
+  }
+
   const saveInvoice = async () => {
-    
     try {
       console.log("deposite--->", deposite);
       console.log("taxxxxx--->", taxPercentage)
       let data = await fetch("http://localhost:3000/api/save-invoice", {
         method: "POST",
         body: JSON.stringify({
+          from : inputValue,
           to: to,
+          logo : base64Image,
           invoice,
           rows,
           subtotal: subtotal,
@@ -117,7 +141,8 @@ export default function Home() {
           deposite : deposite,
           taxPercentage: taxPercentage, 
           total: totalPrice,
-          dueBalance: dueBalance
+          dueBalance: dueBalance,
+          notes
         }),
       });
 
@@ -135,19 +160,146 @@ export default function Home() {
     }
   };
 
+  const generatePDF = async() => {
+    const logoSrc = await fetch("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSkvkv3Zqlxnwu9WusFcKKSmwGhv8zNbJqP1w&s")
+    .then((img) => img.blob())
+    .then((blob) => {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.readAsDataURL(blob); // Convert the blob to base64 string
+      });
+    });
+    const element = document.createElement("div");
+
+    element.innerHTML = `
+    
+      <div style="text-align:center; margin-bottom: 20px;">
+      <img src="${logoSrc}" alt="Company Logo" width="150" />
+    </div>
+      <h1>Invoice</h1>
+      <p><strong>From:</strong> ${inputValue}</p>
+      <p><strong>To:</strong> ${to}</p>
+      <p><strong>Invoice #:</strong> ${invoice}</p>
+      <p><strong>Date:</strong> ${day}-${month}-${year}</p>
+      <img src="${base64Image}" alt="Upload-logo" width="100" height="50" />
+      
+
+      <h2>Items:</h2>
+      <table border="1" cellspacing="0" cellpadding="5" style="width: 100%; border-collapse: collapse;">
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th>Description</th>
+            <th>Unit Cost</th>
+            <th>Quantity</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows
+            .map(
+              (row) =>
+                `<tr>
+                  <td>${row.item}</td>
+                  <td>${row.description}</td>
+                  <td>$${row.unitCost}</td>
+                  <td>${row.quantity}</td>
+                  <td>$${row.price}</td>
+                </tr>`
+            )
+            .join("")}
+        </tbody>
+      </table>
+
+      <h2>Summary:</h2>
+      <table border="1" cellspacing="0" cellpadding="5" style="width: 100%; border-collapse: collapse;">
+        <tbody>
+          <tr>
+            <td><strong>Subtotal</strong></td>
+            <td>$${subtotal}</td>
+          </tr>
+          <tr>
+            <td><strong>Tax (%)</strong></td>
+            <td>${taxPercentage}%</td>
+          </tr>
+          <tr>
+            <td><strong>Tax Amount</strong></td>
+            <td>$${taxAmount}</td>
+          </tr>
+          <tr>
+            <td><strong>Deposited</strong></td>
+            <td>$${deposite}</td>
+          </tr>
+          <tr>
+            <td><strong>Total</strong></td>
+            <td>$${totalPrice}</td>
+          </tr>
+          <tr>
+            <td><strong>Due Balance</strong></td>
+            <td>$${dueBalance}</td>
+          </tr>
+        </tbody>
+      </table>
+      </br>
+      <strong> Notes:</strong> <p>${notes} </p>
+    `;
+    // Use html2pdf.js to generate and download the PDF
+    const options = {
+      margin: 1,
+      filename: "Invoice.pdf",
+      image: { type: "jpeg", quality: 0.98 },
+      html2canvas: { scale: 2 },
+      jsPDF: { unit: "in", format: "letter", orientation: "portrait" },
+    };
+
+    html2pdf().set(options).from(element).save();
+  };
+
+  const handleImageChange = async (e)=>{
+    console.log("event--->", e);
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImageSrc(reader.result); 
+        setBase64Image(reader.result);  
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
   return (
     <>
       <div className={styles.invoiceContainer}>
-        {/* Header Section */}
         <header className={styles.invoiceHeader}>
           <div className={styles.companyDetails}>
-            <h2>START DESIGNS</h2>
-            <p>House No. 677 3rd floor Office No. 308 to 311</p>
-            <p>chandalal kalyanmal complex</p>
-            <p>Kishanpol bazar, Jaipur - 302002</p>
-            <p>startdesigns@gmail.com</p>
-            <p>GSTIN:- 08ACUFS9062L1Z3</p>
-          </div>
+            <strong className={styles.from}>From:</strong>
+        <textarea
+         className={`${styles.textarea} ${isFocused ? styles.focused : ''}`}
+         rows="7"
+         maxLength="500" 
+         placeholder="Type here..."
+         value={inputValue}
+         onChange={handleInputChange}
+         onFocus={() => setIsFocused(true)}
+         onBlur={() => setIsFocused(false)}
+         spellCheck="false" 
+       />
+        
+        </div>
+        <div>
+        <strong>Upload Logo: </strong>
+        <input type="file" accept="image/*" onChange={handleImageChange } />
+
+        {/* Preview the selected image */}
+      {imageSrc && (
+        <div>
+          <Image src={imageSrc} alt="Preview Logo" height="100" width="200" />
+        </div>
+      )}
+    </div>
+
           <div className={styles.companyLogo}>
             <Image
               src={require("./public/images.png")}
@@ -158,7 +310,7 @@ export default function Home() {
           </div>
         </header>
 
-        {/* Invoice Details */}
+       
         <section className={styles.invoiceDetails}>
           <h1>INVOICE</h1>
           <div className={styles.invoiceInfo}>
@@ -181,19 +333,19 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Client Details */}
         <section className={styles.clientDetails}>
           <p>
             <strong>To:</strong>
           </p>
           <textarea
             name="to"
-            style={{ height: "100px", overflow: "hidden" }}
+            style={{ height: "100px", overflow: "hidden",  resize: "none" }}
             onChange={(event) => handleTO(event.target.value)}
+            spellCheck="false"
           />
         </section>
 
-        {/* Table */}
+     
         <table className={styles.invoiceTable}>
           <thead>
             <tr>
@@ -303,17 +455,29 @@ export default function Home() {
             </tbody>
           </table>
         </div>
+        
+        <div className={styles.info}>
+          <strong>Notes </strong><textarea  className = {styles.noteInput} onChange = {handleNotes} spellCheck="false" />
+        </div>
 
-        {/* Save Button */}
+
         <div className={styles.addRow}>
           <button onClick={saveInvoice}> Save Invoice</button>
         </div>
 
-        {/* Listing Button */}
+        
         <div className={styles.addRow}>
           <button className={styles.listingButton} onClick={() => router.push('/listing')}> Listing </button>
         </div>
+
+        <button className={styles.downloadButton} onClick={generatePDF} >
+          Download PDF
+        </button>
+     
       </div>
     </>
   );
 }
+
+
+

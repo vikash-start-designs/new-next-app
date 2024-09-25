@@ -5,6 +5,7 @@
   margin: 0 auto;
   border: 1px solid #ccc;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  position: relative;
 }
 
 .invoiceHeader {
@@ -20,6 +21,9 @@
 
 .companyLogo img {
   width: 150px;
+  position: absolute;
+  top: 0px;
+  right: 0px;
 }
 
 .invoiceDetails {
@@ -38,6 +42,8 @@
 
 .clientDetails {
   margin-top: 30px;
+  overflow: hidden;
+  resize: none; 
 }
 
 .currencySelection {
@@ -63,7 +69,6 @@
   font-size: 18px;
 }
 
-/* Link to add a new row */
 .addRow {
   margin-top: 22px;
   font-size: 30px;
@@ -76,7 +81,7 @@
   cursor: pointer;
 }
 
-/* Summary table styling */
+
 .summaryTable {
   width: 100%;
   margin-top: 20px;
@@ -109,6 +114,69 @@
   background-color: #f0f0f0;
 }
 
-/* strong {
-    font-weight: bold;
-} */
+
+.container {
+  width: 100%;
+  max-width: 600px;
+  margin: 20px auto;
+}
+
+.display {
+  margin-bottom: 10px;
+  background-color: #f1f1f1;
+  padding: 10px;
+  border-radius: 4px;
+  font-size: 16px;
+  color: #333;
+  white-space: pre-line; 
+}
+
+.textarea {
+  width: 100%;
+  padding: 38px;
+  font-size: 16px;
+  border: 2px solid #ccc;
+  border-radius: 4px;
+  background-color: #f9f9f9;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+  overflow: hidden; 
+  resize: none;
+  margin-top: 16px;
+}
+
+.textarea:focus {
+  outline: none;
+}
+
+.focused {
+  background-color: #ffffcc; 
+  border-color: #ff9933;
+}
+.invoice_companyLogo {
+  position: absolute;
+  top: 0px;
+  right: 0px;
+}
+.info {
+  background-color: #e7f3fe;
+
+  margin-top: 23px;
+}
+.noteInput {
+  overflow: hidden;
+  resize: none;
+  width: 100%;
+  border-radius: 4px;
+  font-size: 15px;
+  font-weight: bold;
+}
+
+.downloadButton {
+  padding: 10px 15px;
+  border: none;
+  background-color: #007BFF;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+}
+

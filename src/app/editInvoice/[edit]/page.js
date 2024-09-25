@@ -14,9 +14,11 @@ const EditInvoie = (props) => {
   const month = currentDate.getMonth() + 1;
   const year = currentDate.getFullYear();
 
+  const [isFocused, setIsFocused] = useState(false);
+  const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
+  const [base64Image, setBase64Image] = useState(null);
   const [invoice, setInvoice] = useState("");
-  // const [total, setTotal] = useState(null);
   const [rows, setRows] = useState([]);
   const [tax, setTax] = useState(0)
   const [taxAmount, setTaxAmount] = useState(0);
@@ -25,6 +27,11 @@ const EditInvoie = (props) => {
   const [totalPrice, setTotalPrice] = useState(0);
   const [deposit, setDeposite] = useState(0);
   const [taxPercentage, setTaxPercentage] = useState(0);
+  const [notes, setNotes] = useState("");
+
+  const handleInputChange = (e) => {
+    setFrom(e.target.value);
+  };
 
   const calculateTotalPrice = (updatedRows, taxRate = taxPercentage, deposite = deposit) => {
 
@@ -53,8 +60,10 @@ const EditInvoie = (props) => {
         result = await result.json();
         result = result.data;
         console.log("result2--->", result);
+        setFrom(result.from);
         setTo(result.to);
         setInvoice(result.invoice);
+        setBase64Image(result.logoImage)
         setTotalPrice(result.total);
         setRows(result.rows);
         setSubtotal(result.subtotal);
@@ -62,10 +71,12 @@ const EditInvoie = (props) => {
         setDueBalance(result.dueBalance);
         setDeposite(result.advanceDeposite);
         setTaxPercentage(result.taxParcentage);
+        setNotes(result.notes);
       }
     };
     editInvoice();
   }, [editID]);
+
   const handleAddNewRow = () => {
     setRows([
       ...rows,
@@ -98,6 +109,7 @@ const EditInvoie = (props) => {
     setRows(updatedRows);
     calculateTotalPrice(updatedRows);
   };
+
   const handleTaxAndDepositChange = (event) => {
     const { name, value } = event.target;
     if (name === "tax") {
@@ -110,13 +122,16 @@ const EditInvoie = (props) => {
       calculateTotalPrice(rows, taxPercentage, depositValue);
     }
   };
+
   const handleUpdateInvoice = async () => {
     try {
       let data = await fetch(
         `http://localhost:3000/api/save-invoice/${editID}`,
         {
           method: "PUT",
-          body: JSON.stringify({ to: to, 
+          body: JSON.stringify({ 
+            from: from,
+            to: to, 
             invoice, 
             rows,
             totalPrice, 
@@ -124,7 +139,9 @@ const EditInvoie = (props) => {
             taxAmount: taxAmount,
             deposite : deposit,
             taxPercentage: taxPercentage, 
-            dueBalance: dueBalance }),
+            dueBalance: dueBalance,
+            notes
+           }),
         }
       );
 
@@ -141,18 +158,30 @@ const EditInvoie = (props) => {
       alert("An error occurred. Please try again.");
     }
   };
+
+  const handleNotes = (e)=>{
+    setNotes(event.target.value)
+  }
+
   return (
     <>
       <div className={styles.invoiceContainer}>
         <header className={styles.invoiceHeader}>
           <div className={styles.companyDetails}>
-            <h2>START DESIGNS</h2>
-            <p>House No. 677 3rd floor Office No. 308 to 311</p>
-            <p>chandalal kalyanmal complex</p>
-            <p>Kishanpol bazar, Jaipur - 302002</p>
-            <p>startdesigns@gmail.com</p>
-            <p>GSTIN:- 08ACUFS9062L1Z3</p>
+          <textarea
+     
+     className={`${styles.textarea} ${isFocused ? styles.focused : ''}`}
+     rows="7"
+     maxLength="500" 
+     placeholder="Type here..."
+     value={from}
+     onChange= {handleInputChange}
+     onFocus={() => setIsFocused(true)}
+     onBlur={() => setIsFocused(false)}
+     spellCheck="false" 
+   />
           </div>
+          <div>
           <div className={styles.companyLogo}>
             <Image
               src={require("../../public/images.png")}
@@ -160,6 +189,14 @@ const EditInvoie = (props) => {
               height="100"
               width="600"
             />
+            </div>
+          {base64Image && (
+        <div>
+          <Image src={base64Image} alt="Logo Image" height="100" width="200" />
+        </div>
+        
+      )}
+          
           </div>
         </header>
 
@@ -167,7 +204,7 @@ const EditInvoie = (props) => {
           <h1>INVOICE</h1>
           <div className={styles.invoiceInfo}>
             <strong>Invoice #:</strong>{" "}
-            <textarea style={{ height: "40px" }} name="invoice" value={invoice}>
+            <textarea style={{ height: "40px" ,resize: "none"}} name="invoice" value={invoice}>
               {" "}
             </textarea>
             <p>
@@ -176,7 +213,7 @@ const EditInvoie = (props) => {
             </p>
             <p>
               <strong>Amount Due:</strong>
-              {`₹${totalPrice}`}
+              {`$${totalPrice}`}
             </p>
           </div>
         </section>
@@ -186,9 +223,9 @@ const EditInvoie = (props) => {
             <strong>To:</strong>
           </p>
           <textarea
-            name="to"
-            style={{ height: "100px", overflow: "hidden" }}
             type=" text"
+            name="to"
+            style={{ height: "100px", overflow: "hidden", resize: "none", spellCheck: "false"}}
             value={to}
           >
             {" "}
@@ -196,9 +233,9 @@ const EditInvoie = (props) => {
         </section>
 
         <section className={styles.currencySelection}>
-          <label htmlFor="currency">Rupees(₹):</label>
+          <label htmlFor="currency">Dollar($):</label>
           <select id="currency" name="currency">
-            <option value="INR">Rupees (₹)</option>
+            <option value="Dollar">Dollar ($)</option>
           </select>
         </section>
 
@@ -252,7 +289,7 @@ const EditInvoie = (props) => {
                     onChange={(e) => handleCostAndQua(index, e)}
                   />
                 </td>
-                <td>₹{row.price ? row.price.toFixed(2) : "0.00"}</td>
+                <td>${row.price ? row.price.toFixed(2) : "0.00"}</td>
               </tr>
             ))}
           </tbody>
@@ -319,6 +356,11 @@ const EditInvoie = (props) => {
             </tbody>
           </table>
         </div>
+
+        <div className={styles.info}>
+          <strong>Notes </strong><textarea  className = {styles.noteInput} value= {notes} onChange = {handleNotes} spellCheck="false" />
+        </div>
+
         <div className={styles.addRow}>
           <button onClick={handleUpdateInvoice}> Update Invoice</button>
         </div>

@@ -4,8 +4,10 @@ const mongoose = require("mongoose");
 
 const invoiceSchema = new mongoose.Schema(
   {
+    from : {type: String, required: true},
     to: { type: String, required: true },
     invoice : {type:String, required:true},
+    logoImage: {type: String},
     rows: [
       {
         item: { type: String, required: true },
@@ -20,7 +22,8 @@ const invoiceSchema = new mongoose.Schema(
     advanceDeposite: {type: Number},
     taxParcentage : {type: Number},
     total: { type: Number },
-    dueBalance : {type: Number}
+    dueBalance : {type: Number},
+    notes : {type : String}
   },
   { timestamps: true }
 );
